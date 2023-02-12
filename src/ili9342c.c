@@ -827,7 +827,7 @@ STATIC mp_obj_t ili9342c_ILI9342C_text(size_t n_args, const mp_obj_t *args) {
 	else
 		bg_color = _swap_bytes(BLACK);
 
-	uint8_t	 wide	  = width / 8;
+	uint8_t	 wide	  = (width + 7) / 8;
 	uint16_t buf_size = width * height * 2;
 
 	if (self->buffer_size == 0) {
@@ -843,7 +843,8 @@ STATIC mp_obj_t ili9342c_ILI9342C_text(size_t n_args, const mp_obj_t *args) {
 				for (uint8_t line = 0; line < height; line++) {
 					for (uint8_t line_byte = 0; line_byte < wide; line_byte++) {
 						uint8_t chr_data = font_data[chr_idx];
-						for (uint8_t bit = 8; bit; bit--) {
+                        uint8_t  lobit = width&7 && line_byte == wide-1 ? 8 - width % 8 : 0;
+						for (uint8_t bit = 8; bit > lobit ; bit--) {
 							if (chr_data >> (bit - 1) & 1)
 								self->i2c_buffer[buf_idx] = fg_color;
 							else
